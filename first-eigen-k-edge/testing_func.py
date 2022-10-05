@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 from scipy import sparse
 from pathlib import Path
 
@@ -42,7 +43,9 @@ def normalize_laplacian(graph):
 
 
 undirected_graph = generate_graph()
-nx.draw(undirected_graph, with_labels=True)
+
+im = nx.draw(undirected_graph, with_labels=True)
+plt.show()
 
 L = nx.laplacian_matrix(undirected_graph)
 L_norm_nx = nx.normalized_laplacian_matrix(undirected_graph)
