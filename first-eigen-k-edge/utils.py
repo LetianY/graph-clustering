@@ -8,16 +8,22 @@ def load_data(args):
     feature_file = folder + args.data + "/attrs.npz"
     edge_file = folder + args.data + ".attr/edgelist.txt"
 
+    if not feature_file or not os.path.exists(feature_file):
+        raise Exception("feature file not exist!")
+
+    if not edge_file or not os.path.exists(edge_file):
+        raise Exception("edge file not exist!")
+
     print("loading from " + feature_file)
     features = sparse.load_npz(feature_file)
 
     print(features.shape)
-    n = features.shape[0]
+    # n = features.shape[0]
 
     print("loading from " + edge_file)
     graph = nx.read_edgelist(edge_file, create_using=nx.DiGraph(), nodetype=int)
-    for i in range(n):
-        graph.add_node(i)
+    # for i in range(n):
+    #     graph.add_node(i)
 
     return graph, features
 
@@ -54,5 +60,16 @@ def load_edges(file_name):
             mst = max(s, t)
             if mst > max_id:
                 max_id = mst
-
     return edges, max_id
+
+
+def normalize_laplacian(graph):
+    adj = nx.adjacency_matrix(graph)
+    print(adj.shape)
+    ind = range(len(graph.nodes()))
+    degs = [1.0 / np.sqrt(graph.out_degree(node) + 1) for node in graph.nodes()]
+    degs = sparse.csr_matrix(sparse.coo_matrix((degs, (ind, ind)), shape=adj.shape, dtype=np.float))
+    L = degs.dot(sparse.eye(adj.shape[0]) + adj)
+    L = L.dot(degs)
+
+    return L
