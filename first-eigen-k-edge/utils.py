@@ -1,18 +1,64 @@
 import os
+import numpy as np
 import networkx as nx
 from scipy import sparse
 
 
-def load_data(args):
-    folder = "../../dataset/"
-    feature_file = folder + args.data + "/attrs.npz"
-    edge_file = folder + args.data + ".attr/edgelist.txt"
-
-    if not feature_file or not os.path.exists(feature_file):
-        raise Exception("feature file not exist!")
+def generate_graph(args, module_path):
+    folder = "/dataset/"
+    edge_file = module_path + folder + args.data + ".attr/edgelist.txt"
 
     if not edge_file or not os.path.exists(edge_file):
         raise Exception("edge file not exist!")
+
+    print("loading from " + edge_file)
+    graph = nx.read_edgelist(edge_file, create_using=nx.DiGraph(), nodetype=int)
+
+    return graph
+
+
+def graph_preprocessing(graph):
+    graph = graph.to_undirected()
+
+    largest_cc = max(nx.connected_components(graph), key=len)
+    subgraph_gcc = graph.subgraph(largest_cc)
+
+    return subgraph_gcc
+
+
+def normalize_laplacian(graph):
+    # adjacency matrix
+    adj = nx.adjacency_matrix(graph)
+    ind = range(len(graph.nodes()))
+    print(adj.shape)
+
+    # normalization: deg_norm = D^(-1/2)
+    deg_norm = [1.0 / np.sqrt(graph.degree(node)) for node in graph.nodes()]
+    deg_norm = sparse.csr_matrix(sparse.coo_matrix((deg_norm, (ind, ind)), shape=adj.shape, dtype=float))
+
+    # L = I - D^(-1/2) * A * D^(-1/2)
+    laplacian_norm = sparse.eye(adj.shape[0]) - deg_norm * adj * deg_norm
+
+    return laplacian_norm
+
+
+def calculate_spectrum_gap(graph):
+    eigen_vals = nx.normalized_laplacian_spectrum(graph)
+    first_eigen_val = eigen_vals[1]
+
+    return first_eigen_val
+
+
+############################################################################
+# Unused functions
+
+
+def load_feature(args, module_path):
+    folder = "/dataset/"
+    feature_file = module_path + folder + args.data + "/attrs.npz"
+
+    if not feature_file or not os.path.exists(feature_file):
+        raise Exception("feature file not exist!")
 
     print("loading from " + feature_file)
     features = sparse.load_npz(feature_file)
@@ -20,12 +66,7 @@ def load_data(args):
     print(features.shape)
     # n = features.shape[0]
 
-    print("loading from " + edge_file)
-    graph = nx.read_edgelist(edge_file, create_using=nx.DiGraph(), nodetype=int)
-    # for i in range(n):
-    #     graph.add_node(i)
-
-    return graph, features
+    return features
 
 
 def load_label(file_name, n):
@@ -63,13 +104,13 @@ def load_edges(file_name):
     return edges, max_id
 
 
-def normalize_laplacian(graph):
+def calculate_laplacian(graph):
     adj = nx.adjacency_matrix(graph)
-    print(adj.shape)
-    ind = range(len(graph.nodes()))
-    degs = [1.0 / np.sqrt(graph.out_degree(node) + 1) for node in graph.nodes()]
-    degs = sparse.csr_matrix(sparse.coo_matrix((degs, (ind, ind)), shape=adj.shape, dtype=np.float))
-    L = degs.dot(sparse.eye(adj.shape[0]) + adj)
-    L = L.dot(degs)
 
-    return L
+    ind = range(len(graph.nodes()))
+    deg = [graph.degree(node) for node in graph.nodes()]
+    deg = sparse.csr_matrix(sparse.coo_matrix((deg, (ind, ind)), shape=adj.shape, dtype=float))
+
+    laplacian = deg - adj
+
+    return laplacian
