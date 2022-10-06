@@ -1,5 +1,19 @@
-from utils import *
+import sys
 import argparse
+
+import networkx as nx
+
+from utils import *
+from pathlib import Path
+import matplotlib.pyplot as plt
+
+
+module_dur = os.getcwd()
+sys.path.append(module_dur)
+path = Path(module_dur)
+module_path = str(path.parent.absolute())
+sys.path.append(module_path)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process...')
@@ -7,14 +21,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print("loading data...")
-    graph, features = load_data(args)
-    n = features.shape[0]
+    graph = generate_graph(args, module_path)
+    graph_gcc = graph_preprocessing(graph)
 
-    A = nx.adjacency_matrix(graph)
-    L = nx.laplacian_matrix(graph)
-    L_norm = nx.laplacian_matrix(graph)
-    eigen_vals = nx.laplacian_spectrum(graph)
-    eigen_vals_norm = nx.normalized_laplacian_spectrum(graph)
-
-
-    # adj = normalize_transition(graph)
+    eigen_val_1st = calculate_spectrum_gap(graph_gcc)
+    print(eigen_val_1st)
