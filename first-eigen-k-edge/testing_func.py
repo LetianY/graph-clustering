@@ -32,21 +32,29 @@ def normalize_laplacian(graph):
     deg = [graph.degree(node) for node in graph.nodes()]
     deg = sparse.csr_matrix(sparse.coo_matrix((deg, (ind, ind)), shape=adj.shape, dtype=float))
 
-    # normalization: deg_norm = D^(-1/2)
+    # deg_norm = D^(-1/2)
     deg_norm = [1.0 / np.sqrt(graph.degree(node)) for node in graph.nodes()]
     deg_norm = sparse.csr_matrix(sparse.coo_matrix((deg_norm, (ind, ind)), shape=adj.shape, dtype=float))
 
     # L = I - D^(-1/2) * A * D^(-1/2)
     laplacian_norm = sparse.eye(adj.shape[0]) - deg_norm * adj * deg_norm
+    print(laplacian_norm)
 
     return laplacian_norm
 
 
 undirected_graph = generate_graph()
-
 im = nx.draw(undirected_graph, with_labels=True)
 plt.show()
 
+
+print('#####')
+largest_cc = max(nx.connected_components(undirected_graph), key=len)
+subgraph = undirected_graph.subgraph(largest_cc)
+nx.draw(subgraph, with_labels=True)
+plt.show()
+
+undirected_graph = subgraph
 L = nx.laplacian_matrix(undirected_graph)
 L_norm_nx = nx.normalized_laplacian_matrix(undirected_graph)
 L_norm = normalize_laplacian(undirected_graph)
