@@ -1,8 +1,5 @@
 import sys
 import argparse
-
-import networkx as nx
-
 from utils import *
 from pathlib import Path
 import matplotlib.pyplot as plt
