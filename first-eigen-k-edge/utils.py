@@ -6,7 +6,10 @@ from scipy import sparse
 
 def generate_graph(args, module_path):
     folder = "/dataset/"
-    edge_file = module_path + folder + args.data + ".attr/edgelist.txt"
+    if not args.data:
+        edge_file = module_path + folder + "cora.attr/edgelist.txt"
+    else:
+        edge_file = module_path + folder + args.data + ".attr/edgelist.txt"
 
     if not edge_file or not os.path.exists(edge_file):
         raise Exception("edge file not exist!")
