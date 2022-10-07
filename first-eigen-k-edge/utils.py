@@ -22,6 +22,12 @@ def graph_preprocessing(graph):
 
     largest_cc = max(nx.connected_components(graph), key=len)
     subgraph_gcc = graph.subgraph(largest_cc)
+    print('Preprocessing finished! Largest Connected Component Info:')
+
+    n = subgraph_gcc.number_of_nodes()
+    m = subgraph_gcc.size()
+    print('Number of Nodes:', n)
+    print('Number of Edges:', m)
 
     return subgraph_gcc
 
