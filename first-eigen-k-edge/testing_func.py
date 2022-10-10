@@ -1,11 +1,12 @@
 import os
 import sys
+import pickle
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy import sparse
 from pathlib import Path
-
+from itertools import combinations
 
 module_dur = os.getcwd()
 sys.path.append(module_dur)
@@ -20,6 +21,12 @@ def generate_graph():
     graph = nx.read_edgelist(edge_file, create_using=nx.DiGraph(), nodetype=int)
     graph = graph.to_undirected()
     return graph
+
+
+def preprocessing(graph):
+    largest_cc = max(nx.connected_components(graph), key=len)
+
+    return graph.subgraph(largest_cc)
 
 
 def normalize_laplacian(graph):
@@ -43,30 +50,57 @@ def normalize_laplacian(graph):
     return laplacian_norm
 
 
-undirected_graph = generate_graph()
-im = nx.draw(undirected_graph, with_labels=True)
-plt.show()
+def cal_laplacian(graph):
+    laplacian = nx.laplacian_matrix(graph)
+    laplacian_norm_nx = nx.normalized_laplacian_matrix(graph)
+    laplacian_norm = normalize_laplacian(graph)
+
+    return laplacian, laplacian_norm_nx, laplacian_norm
 
 
-print('#####')
-largest_cc = max(nx.connected_components(undirected_graph), key=len)
-subgraph = undirected_graph.subgraph(largest_cc)
-nx.draw(subgraph, with_labels=True)
-plt.show()
+def plot_graph(graph):
+    im = nx.draw(graph, with_labels=True)
+    plt.show()
 
-undirected_graph = subgraph
-L = nx.laplacian_matrix(undirected_graph)
-L_norm_nx = nx.normalized_laplacian_matrix(undirected_graph)
-L_norm = normalize_laplacian(undirected_graph)
 
-print('#####')
-print(L)
-print('#####')
-print(L_norm)
-print('#####')
-print(L_norm_nx)
+def save_potential_edges(graph):
+    potential_edges = []
+    node_list = list(undirected_graph.nodes())
+    n = len(node_list)
 
-print('#####')
-print(nx.laplacian_spectrum(undirected_graph))
-print('#####')
-print(nx.normalized_laplacian_spectrum(undirected_graph))
+    for u, v in combinations(node_list, 2):
+        if undirected_graph.has_edge(u, v):
+            pass
+        else:
+            potential_edges.append(tuple([u, v]))
+    potential_edges = set(potential_edges)
+
+    folder = "/output/unused_edge/testing/"
+    file = module_path + folder + "potential_edges.pkl"
+
+    with open(file, 'wb') as f:
+        pickle.dump(potential_edges, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+undirected_graph = preprocessing(generate_graph())
+save_potential_edges(undirected_graph)
+plot_graph(undirected_graph)
+
+temp_graph = undirected_graph.copy()
+temp_graph.add_edge(1, 5)
+print(temp_graph)
+plot_graph(temp_graph)
+
+file_path = module_path + "/output/testing/potential_edges.pkl"
+with open(file_path, 'rb') as handle:
+    unused_edges = pickle.load(handle)
+print(unused_edges)
+
+# initialize dictionary for each iteration
+parallel_dict = dict(zip(list(unused_edges), [-1 for i in range(len(unused_edges))]))
+# select edge with max increase for update
+selected_edge = max(parallel_dict, key=parallel_dict.get)
+max_increase = max(parallel_dict.values())
+
+
+
