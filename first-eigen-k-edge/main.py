@@ -1,4 +1,5 @@
 import sys
+import time
 import argparse
 import warnings
 from utils import *
@@ -27,6 +28,8 @@ if __name__ == '__main__':
     parser.add_argument('--data', type=str, help='graph dataset name')
     parser.add_argument('--method', type=str, help='algorithm used')
     args = parser.parse_args()
+
+    start_time = time.time()
 
     print("loading data...")
     graph = generate_graph(args, module_path)
@@ -88,6 +91,9 @@ if __name__ == '__main__':
         pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
     with open(eigen_increase_path, 'wb') as f:
         pickle.dump(eigen_increase_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    end_time = time.time()
+    print('processing time:', end_time - start_time)
 
     # print(edge_sequence)
     # print(eigen_val_sequence)
