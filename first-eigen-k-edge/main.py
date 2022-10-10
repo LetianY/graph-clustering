@@ -6,7 +6,6 @@ from utils import *
 from pathlib import Path
 from multiprocessing import Pool, cpu_count
 from functools import partial
-import matplotlib.pyplot as plt
 
 
 module_dur = os.getcwd()
