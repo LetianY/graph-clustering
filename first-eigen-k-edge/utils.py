@@ -1,13 +1,15 @@
 import os
+import pickle
 import numpy as np
 import networkx as nx
+from itertools import combinations
 from scipy import sparse
 
 
 def generate_graph(args, module_path):
     folder = "/dataset/"
     if not args.data:
-        edge_file = module_path + folder + "cora.attr/edgelist.txt"
+        edge_file = module_path + folder + "testing/edgelist.txt"
     else:
         edge_file = module_path + folder + args.data + ".attr/edgelist.txt"
 
@@ -51,11 +53,40 @@ def normalize_laplacian(graph):
     return laplacian_norm
 
 
-def calculate_spectrum_gap(graph):
+def generate_unused_edges(graph, module_path, args):
+    folder = "/output/"
+    if not args.data:
+        output_file = module_path + folder + "testing/potential_edges.pkl"
+    else:
+        output_file = module_path + folder + args.data + "/potential_edges.pkl"
+
+    potential_edges = []
+    node_list = list(graph.nodes())
+
+    for u, v in combinations(node_list, 2):
+        if graph.has_edge(u, v):
+            pass
+        else:
+            potential_edges.append(tuple([u, v]))
+    potential_edges = set(potential_edges)
+
+    with open(output_file, 'wb') as f:
+        pickle.dump(potential_edges, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def calculate_spectrum(graph):
     eigen_vals = nx.normalized_laplacian_spectrum(graph)
     first_eigen_val = eigen_vals[1]
 
     return first_eigen_val
+
+
+def calculate_new_spectrum(graph, edge: tuple):
+    temp_graph = graph.copy()
+    temp_graph.add_edge(*edge)
+    new_eigen = calculate_spectrum(temp_graph)
+
+    return new_eigen, edge
 
 
 ############################################################################
