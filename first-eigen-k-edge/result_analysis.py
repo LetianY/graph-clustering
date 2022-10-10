@@ -42,6 +42,6 @@ plt.xlabel("# of added edges k")
 plt.ylabel("value of the smallest eigenvalue")
 plt.title(f"eigenvalue plot: {args.data} dataset, {args.method} method")
 plt.legend()
-plt.show()
 
 plt.savefig(output_folder+'/result_analysis.png')
+plt.show()
