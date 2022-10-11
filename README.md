@@ -30,11 +30,3 @@ Node attributes can be loaded as a sparse matrix using the following code
 from scipy import sparse
 features = sparse.load_npz("attrs.npz")
 ```
-
-@inproceedings{nr,
-     title={The Network Data Repository with Interactive Graph Analytics and Visualization},
-     author={Ryan A. Rossi and Nesreen K. Ahmed},
-     booktitle={AAAI},
-     url={https://networkrepository.com},
-     year={2015}
-}
