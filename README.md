@@ -9,6 +9,11 @@ Currently, testing would be the default dataset / output folder if no argument i
 ```python
 {'method': ['greedy'], 'dataset': ['cora', 'facebook', 'random']}
 ```
+Process visualization using cprofile and snakeviz:
+```commandline
+python -m cprofile -o output main.py --data dataset --method method
+snakeviz output
+```
 
 ## Processed Data Source
 @article{yang2020scaling,
