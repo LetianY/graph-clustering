@@ -3,7 +3,11 @@ This repo gives my final year project topic on graph learning. The codes are sti
 
 ## Usage
 ```commandline
-python main.py --data dataset
+python main.py --data dataset --method method
+```
+Currently, testing would be the default dataset / output folder if no argument is given.
+```python
+{'method': ['greedy'], 'dataset': ['cora', 'facebook', 'random']}
 ```
 
 ## Processed Data Source
