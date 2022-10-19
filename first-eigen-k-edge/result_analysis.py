@@ -1,10 +1,10 @@
-import sys
+import argparse
 import os
 import pickle
-import argparse
+import sys
 from pathlib import Path
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 
 module_dur = os.getcwd()
 sys.path.append(module_dur)
