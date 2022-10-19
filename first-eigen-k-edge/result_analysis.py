@@ -19,61 +19,48 @@ def result_analysis(args, itr_name=None):
     else:
         output_folder = module_path + '/output/' + args.data
 
+    potential_edge_file = output_folder + '/potential_edges.pkl'
+    spectrum_file_greedy = output_folder + f'/greedy_eigen_val_sequence.pkl'
+
+    with open(potential_edge_file, 'rb') as f:
+        unused_edges = pickle.load(f)
+    with open(spectrum_file_greedy, 'rb') as f:
+        spectrum_greedy = pickle.load(f)
+
+    k = len(unused_edges)
+    k_value = range(k + 1)
+
+    plt.figure(figsize=(10.5, 6.5))
+
+    if (args.method == 'random') or (not args.method):
+        name_list = ['result_mean', 'quantile_min', 'quantile_1st',
+                     'quantile_median', 'quantile_3st', 'quantile_max']
+        color_list = ['slateblue', 'lightsteelblue', 'darkgrey',
+                      'cornflowerblue', 'slategrey', 'black']
+
+        for i in range(len(name_list)):
+            import_path = output_folder + f'/random_eigen_val_{name_list[i]}_iter{iter_num}.pkl'
+
+            with open(import_path, 'rb') as f:
+                spectrum_random = pickle.load(f)
+
+            plt.plot(k_value, spectrum_random,
+                     label=f'random_{name_list[i]}_{itr_name}',
+                     color=color_list[i])
+
+    if (args.method == 'greedy') or (not args.method):
+        plt.plot(k_value, spectrum_greedy, label=f'greedy', color='lightcoral')
+
+    plt.xlabel("# of added edges k")
+    plt.ylabel("value of the smallest eigenvalue")
+    plt.legend()
+
     if not args.method:
-        potential_edge_file = output_folder + '/potential_edges.pkl'
-        spectrum_file_greedy = output_folder + f'/greedy_eigen_val_sequence.pkl'
-        spectrum_file_random = output_folder + f'/random_eigen_val_sequence_{itr_name}.pkl'
-
-        with open(potential_edge_file, 'rb') as f:
-            unused_edges = pickle.load(f)
-
-        with open(spectrum_file_greedy, 'rb') as f:
-            spectrum_greedy = pickle.load(f)
-
-        with open(spectrum_file_random, 'rb') as f:
-            spectrum_random = pickle.load(f)
-
-        k = len(unused_edges)
-        k_value = range(k + 1)
-
-        plt.figure(figsize=(10.5, 6.5))
-        plt.plot(k_value, spectrum_greedy, label=f'greedy', color='cornflowerblue')
-        plt.plot(k_value, spectrum_random, label=f'random_{itr_name}', color='lightsteelblue')
-
-        plt.xlabel("# of added edges k")
-        plt.ylabel("value of the smallest eigenvalue")
         plt.title(f"eigenvalue plot: {args.data} dataset")
-        plt.legend()
-
-        plt.savefig(output_folder + f'/result_analysis.png')
-        plt.show()
-
+        plt.savefig(output_folder + f'/result_analysis_{itr_name}.png')
     else:
-        potential_edge_file = output_folder + '/potential_edges.pkl'
-        spectrum_file = output_folder + f'/{args.method}_eigen_val_sequence.pkl'
-
-        if args.method == 'random':
-            spectrum_file = output_folder + f'/{args.method}_eigen_val_sequence_{itr_name}.pkl'
-
-        with open(potential_edge_file, 'rb') as f:
-            unused_edges = pickle.load(f)
-
-        with open(spectrum_file, 'rb') as f:
-            result_spectrum = pickle.load(f)
-
-        k = len(unused_edges)
-        k_value = range(k + 1)
-
-        plt.figure(figsize=(10.5, 6.5))
-        plt.plot(k_value, result_spectrum, label=args.method, color='cornflowerblue')
-
-        plt.xlabel("# of added edges k")
-        plt.ylabel("value of the smallest eigenvalue")
         plt.title(f"eigenvalue plot: {args.data} dataset, {args.method} method")
-        plt.legend()
-
-        plt.savefig(output_folder + f'/{args.method}_result_analysis.png')
-        plt.show()
+        plt.savefig(output_folder + f'/{args.method}_result_analysis_{itr_name}.png')
 
 
 parser = argparse.ArgumentParser(description='Process...')
@@ -81,7 +68,7 @@ parser.add_argument('--data', type=str, help='graph dataset name')
 parser.add_argument('--method', type=str, help='algorithm used')
 arguments = parser.parse_args()
 
-iter_num = 1
+iter_num = 500
 if not arguments.method:
     result_analysis(args=arguments, itr_name=f'iter{iter_num}')
 elif arguments.method == 'random':
