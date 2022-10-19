@@ -47,20 +47,6 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
         pickle.dump(eigen_increase_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def random_method_iter(k, graph_gcc, unused_edges, eigen_val_1st, random_list):
-    temp_graph = graph_gcc.copy()
-    edge_sequence = [unused_edges[i] for i in random_list]
-    eigen_val_sequence = [eigen_val_1st]
-
-    for i in range(k):
-        edge = edge_sequence[i]
-        temp_graph.add_edge(*edge)
-        new_eigen = calculate_spectrum(temp_graph)
-        eigen_val_sequence.append(new_eigen)
-
-    return eigen_val_sequence
-
-
 def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
     k = len(unused_edges)
     unused_edges = list(unused_edges)

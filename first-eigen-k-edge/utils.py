@@ -90,6 +90,20 @@ def calculate_new_spectrum(graph, edge: tuple):
     return new_eigen, edge
 
 
+def random_method_iter(k, graph_gcc, unused_edges, eigen_val_1st, random_list):
+    temp_graph = graph_gcc.copy()
+    edge_sequence = [unused_edges[i] for i in random_list]
+    eigen_val_sequence = [eigen_val_1st]
+
+    for i in range(k):
+        edge = edge_sequence[i]
+        temp_graph.add_edge(*edge)
+        new_eigen = calculate_spectrum(temp_graph)
+        eigen_val_sequence.append(new_eigen)
+
+    return eigen_val_sequence
+
+
 ############################################################################
 # Unused functions
 
