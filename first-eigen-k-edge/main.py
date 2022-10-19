@@ -1,12 +1,12 @@
+import argparse
 import sys
 import time
-import argparse
 import warnings
+
+from os.path import exists
+from pathlib import Path
 from algorithms import *
 from utils import *
-from pathlib import Path
-from os.path import exists
-
 
 module_dur = os.getcwd()
 sys.path.append(module_dur)
@@ -14,13 +14,11 @@ path = Path(module_dur)
 module_path = str(path.parent.absolute())
 sys.path.append(module_path)
 
-
 """
 FutureWarning: normalized_laplacian_matrix will return 
 a scipy.sparse array instead of a matrix in Networkx 3.0.
 """
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process...')
@@ -68,6 +66,12 @@ if __name__ == '__main__':
                       graph_gcc=graph_gcc,
                       output_folder=output_folder,
                       method='random')
+    elif args.method == 'max_degree':
+        greedy_by_degree(unused_edges=unused_edges,
+                         eigen_val_1st=eigen_val_1st,
+                         graph_gcc=graph_gcc,
+                         output_folder=output_folder,
+                         method='max_degree')
     else:
         raise Exception("input method not exist!")
 
