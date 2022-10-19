@@ -1,4 +1,3 @@
-import numpy as np
 from utils import *
 from functools import partial
 from multiprocessing import Pool, cpu_count
@@ -63,6 +62,8 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
         new_eigen = calculate_spectrum(temp_graph)
         eigen_val_sequence.append(new_eigen)
 
-    print(eigen_val_sequence)
+    print("saving results...")
+    eigen_val_sequence_path = output_folder + f'/{method}_eigen_val_sequence_iter{iter_num}.pkl'
 
-
+    with open(eigen_val_sequence_path, 'wb') as f:
+        pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
