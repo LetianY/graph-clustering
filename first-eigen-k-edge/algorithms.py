@@ -1,3 +1,4 @@
+import numpy as np
 from utils import *
 from functools import partial
 from multiprocessing import Pool, cpu_count
@@ -47,4 +48,21 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
 
 
 def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
-    pass
+    k = len(unused_edges)
+    unused_edges = list(unused_edges)
+    temp_graph = graph_gcc.copy()
+
+    iter_num = 1
+    random_list = np.random.permutation(k)
+    edge_sequence = [unused_edges[i] for i in random_list]
+    eigen_val_sequence = [eigen_val_1st]
+
+    for i in range(k):
+        edge = edge_sequence[i]
+        temp_graph.add_edge(*edge)
+        new_eigen = calculate_spectrum(temp_graph)
+        eigen_val_sequence.append(new_eigen)
+
+    print(eigen_val_sequence)
+
+

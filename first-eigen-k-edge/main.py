@@ -63,7 +63,11 @@ if __name__ == '__main__':
                       output_folder=output_folder,
                       method='greedy')
     elif args.method == 'random':
-        pass
+        random_method(unused_edges=unused_edges,
+                      eigen_val_1st=eigen_val_1st,
+                      graph_gcc=graph_gcc,
+                      output_folder=output_folder,
+                      method='random')
     else:
         raise Exception("input method not exist!")
 
