@@ -46,13 +46,8 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
         pickle.dump(eigen_increase_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
-    k = len(unused_edges)
-    unused_edges = list(unused_edges)
+def random_method_iter(k, graph_gcc, unused_edges, eigen_val_1st, random_list):
     temp_graph = graph_gcc.copy()
-
-    iter_num = 1
-    random_list = np.random.permutation(k)
     edge_sequence = [unused_edges[i] for i in random_list]
     eigen_val_sequence = [eigen_val_1st]
 
@@ -62,8 +57,35 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
         new_eigen = calculate_spectrum(temp_graph)
         eigen_val_sequence.append(new_eigen)
 
-    print("saving results...")
-    eigen_val_sequence_path = output_folder + f'/{method}_eigen_val_sequence_iter{iter_num}.pkl'
+    return eigen_val_sequence
 
-    with open(eigen_val_sequence_path, 'wb') as f:
-        pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
+    k = len(unused_edges)
+    unused_edges = list(unused_edges)
+
+    iter_num = 500
+    random_seq = [np.random.permutation(k) for i in range(iter_num)]
+
+    with Pool(processes=cpu_count()) as pool:
+        eigen_val_sequence = partial(random_method_iter, k, graph_gcc, unused_edges, eigen_val_1st)
+        eigen_val_sequence_iter = pool.map(eigen_val_sequence, random_seq)
+
+    print("saving results...")
+    result_sequence = np.array(eigen_val_sequence_iter)
+    quantile_min = np.quantile(result_sequence, 0, axis=0)
+    quantile_1st = np.quantile(result_sequence, 0.25, axis=0)
+    quantile_median = np.quantile(result_sequence, 0.5, axis=0)
+    quantile_3st = np.quantile(result_sequence, 0.75, axis=0)
+    quantile_max = np.quantile(result_sequence, 1, axis=0)
+    result_mean = np.mean(result_sequence, axis=0)
+
+    var_list = [result_sequence, result_mean, quantile_min, quantile_1st,
+                quantile_median, quantile_3st, quantile_max]
+    name_list = ['result_sequence', 'result_mean', 'quantile_min', 'quantile_1st',
+                 'quantile_median', 'quantile_3st', 'quantile_max']
+
+    for i in range(len(var_list)):
+        export_path = output_folder + f'/{method}_eigen_val_{name_list[i]}_iter{iter_num}.pkl'
+        with open(export_path, 'wb') as f:
+            pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
