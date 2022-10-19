@@ -1,6 +1,7 @@
-from utils import *
 from functools import partial
 from multiprocessing import Pool, cpu_count
+
+from utils import *
 
 
 def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
@@ -89,3 +90,8 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
         export_path = output_folder + f'/{method}_eigen_val_{name_list[i]}_iter{iter_num}.pkl'
         with open(export_path, 'wb') as f:
             pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def greedy_by_degree(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
+    print(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
+    return
