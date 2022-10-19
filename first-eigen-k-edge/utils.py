@@ -1,8 +1,9 @@
 import os
 import pickle
-import numpy as np
-import networkx as nx
 from itertools import combinations
+
+import networkx as nx
+import numpy as np
 from scipy import sparse
 
 
