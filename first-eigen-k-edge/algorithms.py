@@ -78,6 +78,44 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
             pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def greedy_by_degree(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
-    print(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
-    return
+def max_edge_degree(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
+    # Initialization
+    edge_degree = {}
+    edge_map = dict.fromkeys(list(graph_gcc.nodes()), [])
+
+    for edge in unused_edges:
+        edge_degree[edge] = graph_gcc.degree(edge[0]) + graph_gcc.degree(edge[1])
+        edge_map[edge[0]].append(edge)
+        edge_map[edge[1]].append(edge)
+
+    # greedy by degree sum
+    k = len(unused_edges)
+    temp_graph = graph_gcc.copy()
+    eigen_val_sequence = [eigen_val_1st]
+    edge_sequence = []
+
+    for i in range(k):
+        min_edge = min(edge_degree, key=edge_degree.get)
+        edge_sequence.append(min_edge)
+        # update dictionary
+        edge_degree.pop(min_edge, None)
+        edge_map[min_edge[0]].remove(min_edge)
+        edge_map[min_edge[1]].remove(min_edge)
+        for edge in edge_map[min_edge[0]]:
+            edge_degree[edge] += 1
+        for edge in edge_map[min_edge[1]]:
+            edge_degree[edge] += 1
+        # calculate eigenvalues
+        temp_graph.add_edge(*min_edge)
+        new_eigen = calculate_spectrum(temp_graph)
+        eigen_val_sequence.append(new_eigen)
+        unused_edges.remove(min_edge)
+
+    print("saving results...")
+    edge_sequence_path = output_folder + f'/{method}_edge_sequence.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}_eigen_val_sequence.pkl'
+
+    with open(edge_sequence_path, 'wb') as f:
+        pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(eigen_val_sequence_path, 'wb') as f:
+        pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)

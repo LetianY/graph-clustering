@@ -7,7 +7,7 @@ python main.py --data dataset --method method
 ```
 Currently, testing would be the default dataset / output folder if no argument is given.
 ```python
-{'method': ['greedy', 'random'], 'dataset': ['cora', 'facebook', 'random']}
+{'method': ['greedy', 'random', 'max_edge_degree'], 'dataset': ['cora', 'facebook', 'random']}
 ```
 Process visualization using cprofile and snakeviz:
 ```commandline
