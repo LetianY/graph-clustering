@@ -78,13 +78,18 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
             pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
+def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, rank):
     # Initialization
     edge_degree = {}
     edge_map = dict.fromkeys(list(graph_gcc.nodes()), [])
 
     for edge in unused_edges:
-        edge_degree[edge] = graph_gcc.degree(edge[0]) + graph_gcc.degree(edge[1])
+        if rank == 'sum':
+            edge_degree[edge] = graph_gcc.degree(edge[0]) + graph_gcc.degree(edge[1])
+        elif rank == 'mul':
+            edge_degree[edge] = graph_gcc.degree(edge[0]) * graph_gcc.degree(edge[1])
+        else:
+            raise Exception("rank type not exist!")
         edge_map[edge[0]].append(edge)
         edge_map[edge[1]].append(edge)
 
