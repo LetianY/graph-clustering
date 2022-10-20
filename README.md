@@ -6,8 +6,11 @@ This repo gives my final year project topic on graph learning. The codes are sti
 python main.py --data dataset --method method
 ```
 Currently, testing would be the default dataset / output folder if no argument is given.
+The argument rank-type is only required for edge_degree_min/max method.
 ```python
-{'method': ['greedy', 'random', 'edge_degree_min', 'edge_degree_max'], 'dataset': ['cora', 'facebook', 'random']}
+{'method': ['greedy', 'random', 'edge_degree_min', 'edge_degree_max'], 
+ 'dataset': ['cora', 'facebook', 'random'], 
+ 'rank': ['sum', 'mul']}
 ```
 Process visualization using cprofile and snakeviz:
 ```commandline
