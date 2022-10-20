@@ -21,14 +21,17 @@ def result_analysis(args, itr_name=''):
 
     potential_edge_file = output_folder + '/potential_edges.pkl'
     spectrum_file_greedy = output_folder + f'/greedy_eigen_val_sequence.pkl'
-    spectrum_file_max_edge_degree = output_folder + f'/max_edge_degree_eigen_val_sequence.pkl'
+    spectrum_file_min_edge_degree = output_folder + f'/edge_degree_min_eigen_val_sequence.pkl'
+    spectrum_file_max_edge_degree = output_folder + f'/edge_degree_max_eigen_val_sequence.pkl'
 
     with open(potential_edge_file, 'rb') as f:
         unused_edges = pickle.load(f)
     with open(spectrum_file_greedy, 'rb') as f:
         spectrum_greedy = pickle.load(f)
     with open(spectrum_file_max_edge_degree, 'rb') as f:
-        spectrum_max_edge_degree = pickle.load(f)
+        spectrum_edge_degree_max = pickle.load(f)
+    with open(spectrum_file_min_edge_degree, 'rb') as f:
+        spectrum_edge_degree_min = pickle.load(f)
 
     k = len(unused_edges)
     k_value = range(k + 1)
@@ -54,8 +57,11 @@ def result_analysis(args, itr_name=''):
     if (args.method == 'greedy') or (not args.method):
         plt.plot(k_value, spectrum_greedy, label=f'greedy', color='lightcoral')
 
-    if (args.method == 'max_edge_degree') or (not args.method):
-        plt.plot(k_value, spectrum_max_edge_degree, label=f'greedy_edge_degree', color='lightgreen')
+    if (args.method == 'edge_degree_min') or (not args.method):
+        plt.plot(k_value, spectrum_edge_degree_min, label=f'greedy_edge_degree_min', color='lightgreen')
+
+    if (args.method == 'edge_degree_max') or (not args.method):
+        plt.plot(k_value, spectrum_edge_degree_max, label=f'greedy_edge_degree_max', color='orange')
 
     plt.xlabel("# of added edges k")
     plt.ylabel("value of the smallest eigenvalue")

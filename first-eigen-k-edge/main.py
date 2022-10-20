@@ -66,12 +66,18 @@ if __name__ == '__main__':
                       graph_gcc=graph_gcc,
                       output_folder=output_folder,
                       method='random')
-    elif args.method == 'max_edge_degree':
-        max_edge_degree(unused_edges=unused_edges,
-                        eigen_val_1st=eigen_val_1st,
-                        graph_gcc=graph_gcc,
-                        output_folder=output_folder,
-                        method='max_edge_degree')
+    elif args.method == 'edge_degree_min':
+        edge_degree_greedy(unused_edges=unused_edges,
+                           eigen_val_1st=eigen_val_1st,
+                           graph_gcc=graph_gcc,
+                           output_folder=output_folder,
+                           method='edge_degree_min')
+    elif args.method == 'edge_degree_max':
+        edge_degree_greedy(unused_edges=unused_edges,
+                           eigen_val_1st=eigen_val_1st,
+                           graph_gcc=graph_gcc,
+                           output_folder=output_folder,
+                           method='edge_degree_max')
     else:
         raise Exception("input method not exist!")
 
