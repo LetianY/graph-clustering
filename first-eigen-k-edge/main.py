@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--data', type=str, help='graph dataset name')
     parser.add_argument('--method', type=str, help='algorithm used')
     parser.add_argument('--rank', type=str, help='rank type for greedy by edge')
+    parser.add_argument('--edge_pct', type=str, help='percent of original edges to be added')
     args = parser.parse_args()
 
     start_time = time.time()
@@ -40,6 +41,11 @@ if __name__ == '__main__':
     else:
         output_folder = module_path + '/output/' + args.data
     potential_edge_file = output_folder + '/potential_edges.pkl'
+
+    if not args.edge_pct:
+        edge_pct = 0.1
+    else:
+        edge_pct = args.edge_pct
 
     if exists(potential_edge_file):
         pass
@@ -60,13 +66,15 @@ if __name__ == '__main__':
                       eigen_val_1st=eigen_val_1st,
                       graph_gcc=graph_gcc,
                       output_folder=output_folder,
-                      method='greedy')
+                      method='greedy',
+                      edge_pct=edge_pct)
     elif args.method == 'random':
         random_method(unused_edges=unused_edges,
                       eigen_val_1st=eigen_val_1st,
                       graph_gcc=graph_gcc,
                       output_folder=output_folder,
-                      method='random')
+                      method='random',
+                      edge_pct=edge_pct)
     elif args.method == 'edge_degree_min':
         if not args.rank:
             raise Exception("please input rank type!")
@@ -76,7 +84,8 @@ if __name__ == '__main__':
                                graph_gcc=graph_gcc,
                                output_folder=output_folder,
                                method=args.method,
-                               rank=args.rank)
+                               rank=args.rank,
+                               edge_pct=edge_pct)
     elif args.method == 'edge_degree_max':
         if not args.rank:
             raise Exception("please input rank type!")
@@ -86,7 +95,8 @@ if __name__ == '__main__':
                                graph_gcc=graph_gcc,
                                output_folder=output_folder,
                                method=args.method,
-                               rank=args.rank)
+                               rank=args.rank,
+                               edge_pct=edge_pct)
     else:
         raise Exception("input method not exist!")
 

@@ -3,10 +3,12 @@ This repo gives my final year project topic on graph learning. The codes are sti
 
 ## Usage
 ```commandline
-python main.py --data dataset --method method
+python main.py --data dataset --method method --rank rank --edge_pct edge_pct
 ```
 Currently, testing would be the default dataset / output folder if no argument is given.
 The argument rank-type is only required for edge_degree_min/max method.
+The default edge_pct will be 0.1, and user can specify an arbitrary portion for calculation.
+
 ```python
 {'method': ['greedy', 'random', 'edge_degree_min', 'edge_degree_max'], 
  'dataset': ['cora', 'facebook', 'random'], 

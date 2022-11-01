@@ -4,15 +4,17 @@ from multiprocessing import Pool, cpu_count
 from utils import *
 
 
-def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
+def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
     k = len(unused_edges)
+    m = graph_gcc.number_of_edges
+    num_add_edges = min(k, int(edge_pct * m))
     edge_sequence = []
     eigen_increase_sequence = []
     eigen_val_sequence = [eigen_val_1st]
     temp_graph = graph_gcc.copy()
 
     with Pool(processes=cpu_count()) as pool:
-        for i in range(k):
+        for i in range(num_add_edges):
             original_eigen = calculate_spectrum(temp_graph)
 
             # parallel computing, iterate over current unused edges
@@ -27,7 +29,7 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
 
             max_increase = new_eigen - original_eigen
             eigen_increase_sequence.append(max_increase)
-            if i % int(k / 100 + 1) == 0:
+            if i % int(num_add_edges / 100 + 1) == 0:
                 print(f"iteration {i}: max increase = {max_increase}, selected edge = {selected_edge}")
 
             # Delete from unused edge, update graph
@@ -35,9 +37,9 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
             unused_edges.remove(selected_edge)
 
     print("saving results...")
-    edge_sequence_path = output_folder + f'/{method}_edge_sequence.pkl'
-    eigen_increase_path = output_folder + f'/{method}_eigen_increase_sequence.pkl'
-    eigen_val_sequence_path = output_folder + f'/{method}_eigen_val_sequence.pkl'
+    edge_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_edge_sequence.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_eigen_val_sequence.pkl'
+    eigen_increase_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_eigen_increase_sequence.pkl'
 
     with open(edge_sequence_path, 'wb') as f:
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -47,15 +49,18 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
         pickle.dump(eigen_increase_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method):
+def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
     k = len(unused_edges)
     unused_edges = list(unused_edges)
+
+    m = graph_gcc.number_of_edges
+    num_add_edges = min(k, int(edge_pct * m))
 
     iter_num = 500
     random_seq = [np.random.permutation(k) for i in range(iter_num)]
 
     with Pool(processes=cpu_count()) as pool:
-        eigen_val_sequence = partial(random_method_iter, k, graph_gcc, unused_edges, eigen_val_1st)
+        eigen_val_sequence = partial(random_method_iter, num_add_edges, graph_gcc, unused_edges, eigen_val_1st)
         eigen_val_sequence_iter = pool.map(eigen_val_sequence, random_seq)
 
     print("saving results...")
@@ -73,12 +78,12 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method)
                  'quantile_median', 'quantile_3st', 'quantile_max']
 
     for i in range(len(var_list)):
-        export_path = output_folder + f'/{method}_eigen_val_{name_list[i]}_iter{iter_num}.pkl'
+        export_path = output_folder + f'/{method}/eigen_val_{int(edge_pct*100)}_epct_iter{iter_num}_{name_list[i]}.pkl'
         with open(export_path, 'wb') as f:
             pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, rank):
+def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, rank, edge_pct):
     # Initialization
     edge_degree = {}
     edge_map = dict.fromkeys(list(graph_gcc.nodes()), [])
@@ -95,11 +100,14 @@ def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, me
 
     # greedy by degree sum
     k = len(unused_edges)
+    m = graph_gcc.number_of_edges
+    num_add_edges = min(k, int(edge_pct * m))
+
     temp_graph = graph_gcc.copy()
     eigen_val_sequence = [eigen_val_1st]
     edge_sequence = []
 
-    for i in range(k):
+    for i in range(num_add_edges):
         if method == 'edge_degree_min':
             selected_edge = min(edge_degree, key=edge_degree.get)
         elif method == 'edge_degree_max':
@@ -122,8 +130,8 @@ def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, me
         unused_edges.remove(selected_edge)
 
     print("saving results...")
-    edge_sequence_path = output_folder + f'/{method}_edge_sequence.pkl'
-    eigen_val_sequence_path = output_folder + f'/{method}_eigen_val_sequence.pkl'
+    edge_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_edge_sequence.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_eigen_val_sequence.pkl'
 
     with open(edge_sequence_path, 'wb') as f:
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
