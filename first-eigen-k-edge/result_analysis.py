@@ -19,10 +19,15 @@ def result_analysis(args, itr_name=''):
     else:
         output_folder = module_path + '/output/' + args.data
 
+    if not args.edge_pct:
+        raise Exception("please input edge percentage!!")
+    else:
+        edge_pct = args.edge_pct
+
     potential_edge_file = output_folder + '/potential_edges.pkl'
-    spectrum_file_greedy = output_folder + f'/greedy_eigen_val_sequence.pkl'
-    spectrum_file_min_edge_degree = output_folder + f'/edge_degree_min_eigen_val_sequence.pkl'
-    spectrum_file_max_edge_degree = output_folder + f'/edge_degree_max_eigen_val_sequence.pkl'
+    spectrum_file_greedy = output_folder + f'/greedy/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+    spectrum_file_min_edge_degree = output_folder + f'/edge_degree_min/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+    spectrum_file_max_edge_degree = output_folder + f'/edge_degree_max/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
 
     with open(potential_edge_file, 'rb') as f:
         unused_edges = pickle.load(f)
@@ -33,9 +38,6 @@ def result_analysis(args, itr_name=''):
     with open(spectrum_file_min_edge_degree, 'rb') as f:
         spectrum_edge_degree_min = pickle.load(f)
 
-    k = len(unused_edges)
-    k_value = range(k + 1)
-
     plt.figure(figsize=(10.5, 6.5))
 
     if (args.method == 'random') or (not args.method):
@@ -45,39 +47,41 @@ def result_analysis(args, itr_name=''):
                       'cornflowerblue', 'slategrey', 'black']
 
         for i in range(len(name_list)):
-            import_path = output_folder + f'/random_eigen_val_{name_list[i]}_iter{iter_num}.pkl'
+            import_path = output_folder + f'/random/eigen_val_epct{int(edge_pct*100)}_iter{iter_num}_{name_list[i]}.pkl'
 
             with open(import_path, 'rb') as f:
                 spectrum_random = pickle.load(f)
 
-            plt.plot(k_value, spectrum_random,
+            plt.plot(range(len(spectrum_random)+1), spectrum_random,
                      label=f'random_{name_list[i]}_{itr_name}',
                      color=color_list[i])
 
     if (args.method == 'greedy') or (not args.method):
-        plt.plot(k_value, spectrum_greedy, label=f'greedy', color='lightcoral')
+        plt.plot(range(len(spectrum_greedy)+1), spectrum_greedy, label=f'greedy', color='lightcoral')
 
     if (args.method == 'edge_degree_min') or (not args.method):
-        plt.plot(k_value, spectrum_edge_degree_min, label=f'greedy_edge_degree_min', color='lightgreen')
+        plt.plot(range(len(spectrum_edge_degree_min)+1), spectrum_edge_degree_min, label=f'greedy_edge_degree_min', color='lightgreen')
 
     if (args.method == 'edge_degree_max') or (not args.method):
-        plt.plot(k_value, spectrum_edge_degree_max, label=f'greedy_edge_degree_max', color='orange')
+        plt.plot(range(len(spectrum_edge_degree_max)+1), spectrum_edge_degree_max, label=f'greedy_edge_degree_max', color='orange')
 
     plt.xlabel("# of added edges k")
     plt.ylabel("value of the smallest eigenvalue")
     plt.legend()
 
     if not args.method:
-        plt.title(f"eigenvalue plot: {args.data} dataset")
-        plt.savefig(output_folder + f'/result_analysis_{itr_name}.png')
+        plt.title(f"eigenvalue plot: {args.data} dataset {int(edge_pct*100)}% edge")
+        plt.savefig(output_folder + f'/result_analysis_epct{int(edge_pct*100)}_{itr_name}.png')
     else:
-        plt.title(f"eigenvalue plot: {args.data} dataset, {args.method} method")
-        plt.savefig(output_folder + f'/{args.method}_result_analysis_{itr_name}.png')
+        plt.title(f"eigenvalue plot: {args.data} dataset {int(edge_pct*100)}% edge, {args.method} method")
+        plt.savefig(output_folder + f'/{args.method}/result_analysis_epct{int(edge_pct*100)}_{itr_name}.png')
 
+###############################################################################################################
 
 parser = argparse.ArgumentParser(description='Process...')
 parser.add_argument('--data', type=str, help='graph dataset name')
 parser.add_argument('--method', type=str, help='algorithm used')
+parser.add_argument('--edge_pct', type=str, help='percent of original edges to be added')
 arguments = parser.parse_args()
 
 iter_num = 500

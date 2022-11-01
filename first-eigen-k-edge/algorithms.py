@@ -37,9 +37,9 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method,
             unused_edges.remove(selected_edge)
 
     print("saving results...")
-    edge_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_edge_sequence.pkl'
-    eigen_val_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_eigen_val_sequence.pkl'
-    eigen_increase_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_eigen_increase_sequence.pkl'
+    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+    eigen_increase_path = output_folder + f'/{method}/eigen_increase_sequence_epct{int(edge_pct*100)}.pkl'
 
     with open(edge_sequence_path, 'wb') as f:
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -78,7 +78,7 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method,
                  'quantile_median', 'quantile_3st', 'quantile_max']
 
     for i in range(len(var_list)):
-        export_path = output_folder + f'/{method}/eigen_val_{int(edge_pct*100)}_epct_iter{iter_num}_{name_list[i]}.pkl'
+        export_path = output_folder + f'/{method}/eigen_val_epct{int(edge_pct*100)}_iter{iter_num}_{name_list[i]}.pkl'
         with open(export_path, 'wb') as f:
             pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -130,8 +130,8 @@ def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, me
         unused_edges.remove(selected_edge)
 
     print("saving results...")
-    edge_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_edge_sequence.pkl'
-    eigen_val_sequence_path = output_folder + f'/{method}/{int(edge_pct*100)}_epct_eigen_val_sequence.pkl'
+    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
 
     with open(edge_sequence_path, 'wb') as f:
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
