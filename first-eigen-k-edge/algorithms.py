@@ -104,6 +104,8 @@ def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, me
             selected_edge = min(edge_degree, key=edge_degree.get)
         elif method == 'edge_degree_max':
             selected_edge = max(edge_degree, key=edge_degree.get)
+        else:
+            raise Exception("method not exist!")
         edge_sequence.append(selected_edge)
         # update dictionary
         edge_degree.pop(selected_edge, None)
