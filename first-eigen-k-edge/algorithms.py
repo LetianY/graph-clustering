@@ -6,14 +6,15 @@ from utils import *
 
 def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
     k = len(unused_edges)
-    m = graph_gcc.number_of_edges
+    m = graph_gcc.number_of_edges()
     num_add_edges = min(k, int(edge_pct * m))
     edge_sequence = []
     eigen_increase_sequence = []
     eigen_val_sequence = [eigen_val_1st]
     temp_graph = graph_gcc.copy()
+    cpu_num = min(cpu_count(), 72)
 
-    with Pool(processes=cpu_count()) as pool:
+    with Pool(processes=cpu_num) as pool:
         for i in range(num_add_edges):
             original_eigen = calculate_spectrum(temp_graph)
 
@@ -51,14 +52,15 @@ def greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method,
 
 def fast_greedy_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
     k = len(unused_edges)
-    m = graph_gcc.number_of_edges
+    m = graph_gcc.number_of_edges()
     num_add_edges = min(k, int(edge_pct * m))
     edge_sequence = []
     eigen_increase_sequence = []
     eigen_val_sequence = [eigen_val_1st]
     temp_graph = graph_gcc.copy()
+    cpu_num = min(cpu_count(), 72)
 
-    with Pool(processes=cpu_count()) as pool:
+    with Pool(processes=cpu_num) as pool:
         for i in range(num_add_edges):
             original_eigen = calculate_spectrum(temp_graph)
 
@@ -98,7 +100,7 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method,
     k = len(unused_edges)
     unused_edges = list(unused_edges)
 
-    m = graph_gcc.number_of_edges
+    m = graph_gcc.number_of_edges()
     num_add_edges = min(k, int(edge_pct * m))
 
     iter_num = 500
@@ -145,7 +147,7 @@ def edge_degree_greedy(unused_edges, eigen_val_1st, graph_gcc, output_folder, me
 
     # greedy by degree sum
     k = len(unused_edges)
-    m = graph_gcc.number_of_edges
+    m = graph_gcc.number_of_edges()
     num_add_edges = min(k, int(edge_pct * m))
 
     temp_graph = graph_gcc.copy()
