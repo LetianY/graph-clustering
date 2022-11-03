@@ -45,7 +45,7 @@ if __name__ == '__main__':
     if not args.edge_pct:
         edge_pct = 0.1
     else:
-        edge_pct = args.edge_pct
+        edge_pct = float(args.edge_pct)
 
     if exists(potential_edge_file):
         pass
