@@ -20,6 +20,14 @@ python -m cprofile -o output main.py --data dataset --method method
 snakeviz output
 ```
 
+## Environment: 
+```commandline
+conda create --prefix env python=3.8
+conda install networkx=2.8.4
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
+conda install pyg -c pyg
+```
+
 ## Processed Data Source
 @article{yang2020scaling,
   title={Scaling Attributed Network Embedding to Massive Graphs},
