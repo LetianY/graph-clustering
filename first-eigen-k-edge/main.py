@@ -2,10 +2,11 @@ import argparse
 import sys
 import time
 import warnings
-
 from os.path import exists
 from pathlib import Path
+
 from algorithms import *
+from gpu_greedy import *
 from utils import *
 
 module_dur = os.getcwd()
@@ -62,12 +63,12 @@ if __name__ == '__main__':
     if not args.method:
         raise Exception("please input an algorithm for computation")
     elif args.method == 'greedy':
-        greedy_method(unused_edges=unused_edges,
-                      eigen_val_1st=eigen_val_1st,
-                      graph_gcc=graph_gcc,
-                      output_folder=output_folder,
-                      method='greedy',
-                      edge_pct=edge_pct)
+        greedy_method_gpu(unused_edges=unused_edges,
+                          eigen_val_1st=eigen_val_1st,
+                          graph_gcc=graph_gcc,
+                          output_folder=output_folder,
+                          method='greedy',
+                          edge_pct=edge_pct)
     elif args.method == 'random':
         random_method(unused_edges=unused_edges,
                       eigen_val_1st=eigen_val_1st,
