@@ -49,8 +49,7 @@ if __name__ == '__main__':
         edge_pct = float(args.edge_pct)
 
     if exists(potential_edge_file):
-        print("generating potential edge list...")
-        generate_unused_edges(graph_gcc, module_path, args)
+        pass
     else:
         print("generating potential edge list...")
         generate_unused_edges(graph_gcc, module_path, args)
