@@ -35,6 +35,8 @@ def graph_preprocessing(graph):
     print('Number of Nodes:', n)
     print('Number of Edges:', m)
 
+    subgraph_gcc = nx.convert_node_labels_to_integers(subgraph_gcc)
+
     return subgraph_gcc
 
 
