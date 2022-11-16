@@ -15,6 +15,8 @@ path = Path(module_dur)
 module_path = str(path.parent.absolute())
 sys.path.append(module_path)
 
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+
 """
 FutureWarning: normalized_laplacian_matrix will return 
 a scipy.sparse array instead of a matrix in Networkx 3.0.

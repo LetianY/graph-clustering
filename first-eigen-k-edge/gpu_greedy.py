@@ -1,5 +1,6 @@
 import os
 import torch
+import pickle
 from torch_geometric.utils.convert import from_networkx
 from torch_geometric.utils import get_laplacian
 
@@ -18,8 +19,8 @@ def calculate_new_spectrum_gpu(edge_index, edge):
     selected_edge = list(edge)
     add_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
                              [selected_edge[1], selected_edge[0]]]).to(device)
-    edge_index = torch.cat([edge_index, add_edge], 1)
-    new_eigen = calculate_spectrum_gpu(edge_index)
+    edge_index_new = torch.cat([edge_index, add_edge], 1)
+    new_eigen = calculate_spectrum_gpu(edge_index_new)
     return new_eigen
 
 
@@ -27,6 +28,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
     k = len(unused_edges)
     m = graph_gcc.number_of_edges()
     num_add_edges = min(k, int(edge_pct * m))
+    unused_edges = list(unused_edges)
     edge_sequence = []
     eigen_increase_sequence = []
     eigen_val_sequence = [eigen_val_1st]
@@ -34,30 +36,37 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
     # Transfer data object to GPU.
     device = torch.device('cuda')
     temp_graph = from_networkx(graph_gcc)
-    temp_graph = temp_graph.to(device)
     edge_index = temp_graph.edge_index().to(device)
 
     for i in range(num_add_edges):
         original_eigen = calculate_spectrum_gpu(edge_index)
 
-        # parallel computing, iterate over current unused edges
-        new_spectrum = partial(calculate_new_spectrum, temp_graph)
-        parallel_result = pool.map(new_spectrum, unused_edges)
+        k = len(unused_edges)
+        max_increase = -10
+        new_eigen = 0
+        selected_edge = None
+
+        for j in range(k):
+            edge = unused_edges[j]
+            new_spectrum = calculate_new_spectrum_gpu(edge_index, edge)
+            if (new_spectrum - original_eigen) > max_increase:
+                max_increase = new_spectrum - original_eigen
+                new_eigen = new_spectrum
+                selected_edge = edge
 
         # select edge with max increase for update
-        selected_edge = max(parallel_result)[1]
-        new_eigen = max(parallel_result)[0]
         edge_sequence.append(selected_edge)
         eigen_val_sequence.append(new_eigen)
-
-        max_increase = new_eigen - original_eigen
         eigen_increase_sequence.append(max_increase)
+
         if i % int(num_add_edges / 100 + 1) == 0:
             print(f"iteration {i}: max increase = {max_increase}, selected edge = {selected_edge}")
 
         # Delete from unused edge, update graph
-        temp_graph.add_edge(*selected_edge)
         unused_edges.remove(selected_edge)
+        temp_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
+                                  [selected_edge[1], selected_edge[0]]]).to(device)
+        edge_index = torch.cat([edge_index, temp_edge], 1)
 
     print("saving results...")
     edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
