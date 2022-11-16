@@ -1,12 +1,26 @@
+import os
 import torch
-from torch_geometric.utils import get_laplacian
 from torch_geometric.utils.convert import from_networkx
+from torch_geometric.utils import get_laplacian
+
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 def calculate_spectrum_gpu(edge_index):
-    device = torch.device('cuda')
     lap_sym = get_laplacian(edge_index=edge_index, normalization='sym')
-    lap_sym = lap_sym.to(device)
+    laplacian = torch.sparse_coo_tensor(lap_sym[0], lap_sym[1], (6, 6)).to_dense()
+    eigen_vals = torch.linalg.eigvalsh(laplacian)
+    first_eigen_val = eigen_vals[1]
+    return first_eigen_val.detach().cpu().numpy()
 
+
+def calculate_new_spectrum_gpu(edge_index, edge):
+    device = torch.device('cuda')
+    selected_edge = list(edge)
+    add_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
+                             [selected_edge[1], selected_edge[0]]]).to(device)
+    edge_index = torch.cat([edge_index, add_edge], 1)
+    new_eigen = calculate_spectrum_gpu(edge_index)
+    return new_eigen
 
 
 def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
@@ -24,7 +38,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
     edge_index = temp_graph.edge_index().to(device)
 
     for i in range(num_add_edges):
-        original_eigen = calculate_spectrum(edge_index)
+        original_eigen = calculate_spectrum_gpu(edge_index)
 
         # parallel computing, iterate over current unused edges
         new_spectrum = partial(calculate_new_spectrum, temp_graph)
