@@ -60,8 +60,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
                 new_eigen = new_spectrum
                 selected_edge = edge
             if j % 1000 == 0:
-                print(
-                    f'{j + 1} edges processed in this round!, still {k - j - 1} edges to go, time = {time.time() - temp_start}')
+                print(f'{j + 1} edges processed in this round!, still {k - j - 1} edges to go, time = {time.time() - temp_start}')
 
         # select edge with max increase for update
         edge_sequence.append(selected_edge)
@@ -94,11 +93,18 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
 def random_method_iter_gpu(k, n, edge_index, unused_edges, eigen_val_1st, random_list):
     edge_sequence = [unused_edges[i] for i in random_list]
     eigen_val_sequence = [eigen_val_1st]
+    device = torch.device('cuda')
 
     for i in range(k):
         edge = edge_sequence[i]
         new_eigen = calculate_new_spectrum_gpu(edge_index, edge, n)
         eigen_val_sequence.append(new_eigen)
+
+        # Delete from unused edge, update graph
+        selected_edge = edge
+        temp_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
+                                  [selected_edge[1], selected_edge[0]]]).to(device)
+        edge_index = torch.cat([edge_index, temp_edge], 1)
 
     return eigen_val_sequence
 
@@ -145,3 +151,71 @@ def random_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
         export_path = output_folder + f'/{method}/eigen_val_epct{int(edge_pct * 100)}_iter{iter_num}_{name_list[i]}.pkl'
         with open(export_path, 'wb') as f:
             pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def edge_degree_greedy_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, rank, edge_pct):
+    # Initialization
+    edge_degree = {}
+    edge_map = dict.fromkeys(list(graph_gcc.nodes()), [])
+
+    for edge in unused_edges:
+        if rank == 'sum':
+            edge_degree[edge] = graph_gcc.degree(edge[0]) + graph_gcc.degree(edge[1])
+        elif rank == 'mul':
+            edge_degree[edge] = graph_gcc.degree(edge[0]) * graph_gcc.degree(edge[1])
+        else:
+            raise Exception("rank type not exist!")
+        edge_map[edge[0]].append(edge)
+        edge_map[edge[1]].append(edge)
+
+    # greedy by degree sum
+    k = len(unused_edges)
+    n = graph_gcc.number_of_nodes()
+    m = graph_gcc.number_of_edges()
+    num_add_edges = min(k, int(edge_pct * m))
+
+    # Transfer data object to GPU.
+    device = torch.device('cuda')
+    temp_graph = from_networkx(graph_gcc)
+    edge_index = temp_graph.edge_index.to(device)
+
+    eigen_val_sequence = [eigen_val_1st]
+    edge_sequence = []
+
+    for i in range(num_add_edges):
+        if method == 'edge_degree_min':
+            selected_edge = min(edge_degree, key=edge_degree.get)
+        elif method == 'edge_degree_max':
+            selected_edge = max(edge_degree, key=edge_degree.get)
+        else:
+            raise Exception("method not exist!")
+        edge_sequence.append(selected_edge)
+
+        # update dictionary
+        edge_degree.pop(selected_edge, None)
+        edge_map[selected_edge[0]].remove(selected_edge)
+        edge_map[selected_edge[1]].remove(selected_edge)
+
+        for edge in edge_map[selected_edge[0]]:
+            edge_degree[edge] += 1
+        for edge in edge_map[selected_edge[1]]:
+            edge_degree[edge] += 1
+
+        # calculate eigenvalues
+        new_eigen = calculate_new_spectrum_gpu(edge_index, selected_edge, n)
+        eigen_val_sequence.append(new_eigen)
+        unused_edges.remove(selected_edge)
+
+        # update graph
+        temp_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
+                                  [selected_edge[1], selected_edge[0]]]).to(device)
+        edge_index = torch.cat([edge_index, temp_edge], 1)
+
+    print("saving results...")
+    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+
+    with open(edge_sequence_path, 'wb') as f:
+        pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(eigen_val_sequence_path, 'wb') as f:
+        pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
