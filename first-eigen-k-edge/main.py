@@ -92,13 +92,13 @@ if __name__ == '__main__':
         if not args.rank:
             raise Exception("please input rank type!")
         else:
-            edge_degree_greedy(unused_edges=unused_edges,
-                               eigen_val_1st=eigen_val_1st,
-                               graph_gcc=graph_gcc,
-                               output_folder=output_folder,
-                               method=args.method,
-                               rank=args.rank,
-                               edge_pct=edge_pct)
+            edge_degree_greedy_gpu(unused_edges=unused_edges,
+                                   eigen_val_1st=eigen_val_1st,
+                                   graph_gcc=graph_gcc,
+                                   output_folder=output_folder,
+                                   method=args.method,
+                                   rank=args.rank,
+                                   edge_pct=edge_pct)
     else:
         raise Exception("input method not exist!")
 

@@ -60,7 +60,8 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
                 new_eigen = new_spectrum
                 selected_edge = edge
             if j % 1000 == 0:
-                print(f'{j + 1} edges processed in this round!, still {k - j - 1} edges to go, time = {time.time() - temp_start}')
+                print(
+                    f'{j + 1} edges processed in this round!, still {k - j - 1} edges to go, time = {time.time() - temp_start}')
 
         # select edge with max increase for update
         edge_sequence.append(selected_edge)
@@ -131,7 +132,7 @@ def random_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
         eigen_val_sequence = random_method_iter_gpu(num_add_edges, n, edge_index,
                                                     unused_edges, eigen_val_1st, random_list)
         eigen_val_sequence_iter.append(eigen_val_sequence)
-        print(f'iter{i}: time = {time.time()-temp_start}')
+        print(f'iter{i}: time = {time.time() - temp_start}')
 
     print("saving results...")
     result_sequence = np.array(eigen_val_sequence_iter)
@@ -182,6 +183,8 @@ def edge_degree_greedy_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder
     eigen_val_sequence = [eigen_val_1st]
     edge_sequence = []
 
+    print("generating edge sequences...")
+
     for i in range(num_add_edges):
         if method == 'edge_degree_min':
             selected_edge = min(edge_degree, key=edge_degree.get)
@@ -196,10 +199,22 @@ def edge_degree_greedy_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder
         edge_map[selected_edge[0]].remove(selected_edge)
         edge_map[selected_edge[1]].remove(selected_edge)
 
+        # Update rank
+        graph_gcc.add_edge(*selected_edge)
         for edge in edge_map[selected_edge[0]]:
-            edge_degree[edge] += 1
+            if rank == 'sum':
+                edge_degree[edge] += 1
+            elif rank == 'mul':
+                edge_degree[edge] = graph_gcc.degree(edge[0]) * graph_gcc.degree(edge[1])
+            else:
+                pass
         for edge in edge_map[selected_edge[1]]:
-            edge_degree[edge] += 1
+            if rank == 'sum':
+                edge_degree[edge] += 1
+            elif rank == 'mul':
+                edge_degree[edge] = graph_gcc.degree(edge[0]) * graph_gcc.degree(edge[1])
+            else:
+                pass
 
         # calculate eigenvalues
         new_eigen = calculate_new_spectrum_gpu(edge_index, selected_edge, n)
@@ -212,8 +227,8 @@ def edge_degree_greedy_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder
         edge_index = torch.cat([edge_index, temp_edge], 1)
 
     print("saving results...")
-    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
-    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct * 100)}.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
 
     with open(edge_sequence_path, 'wb') as f:
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
