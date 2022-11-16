@@ -57,9 +57,9 @@ def random_method(unused_edges, eigen_val_1st, graph_gcc, output_folder, method,
     m = graph_gcc.number_of_edges()
     num_add_edges = min(k, int(edge_pct * m))
 
-    iter_num = 100
+    iter_num = 30
     cpu_num = min(cpu_count(), 72)
-    random_seq = [np.random.permutation(num_add_edges) for i in range(iter_num)]
+    random_seq = [np.random.choice(k, num_add_edges, replace=False) for i in range(iter_num)]
 
     with Pool(processes=cpu_num) as pool:
         eigen_val_sequence = partial(random_method_iter, num_add_edges, graph_gcc, unused_edges, eigen_val_1st)
