@@ -6,27 +6,28 @@ from torch_geometric.utils import get_laplacian
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
-def calculate_spectrum_gpu(edge_index):
+def calculate_spectrum_gpu(edge_index, n):
     lap_sym = get_laplacian(edge_index=edge_index, normalization='sym')
-    laplacian = torch.sparse_coo_tensor(lap_sym[0], lap_sym[1], (6, 6)).to_dense()
+    laplacian = torch.sparse_coo_tensor(lap_sym[0], lap_sym[1], (n, n)).to_dense()
     eigen_vals = torch.linalg.eigvalsh(laplacian)
     first_eigen_val = eigen_vals[1]
     return first_eigen_val.detach().cpu().numpy()
 
 
-def calculate_new_spectrum_gpu(edge_index, edge):
+def calculate_new_spectrum_gpu(edge_index, edge, n):
     device = torch.device('cuda')
     selected_edge = list(edge)
     add_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
                              [selected_edge[1], selected_edge[0]]]).to(device)
     edge_index_new = torch.cat([edge_index, add_edge], 1)
-    new_eigen = calculate_spectrum_gpu(edge_index_new)
+    new_eigen = calculate_spectrum_gpu(edge_index_new, n)
     return new_eigen
 
 
 def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
     k = len(unused_edges)
     m = graph_gcc.number_of_edges()
+    n = graph_gcc.number_of_nodes()
     num_add_edges = min(k, int(edge_pct * m))
     unused_edges = list(unused_edges)
     edge_sequence = []
@@ -39,7 +40,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
     edge_index = temp_graph.edge_index.to(device)
 
     for i in range(num_add_edges):
-        original_eigen = calculate_spectrum_gpu(edge_index)
+        original_eigen = calculate_spectrum_gpu(edge_index, n)
 
         k = len(unused_edges)
         max_increase = -10
@@ -48,7 +49,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
 
         for j in range(k):
             edge = unused_edges[j]
-            new_spectrum = calculate_new_spectrum_gpu(edge_index, edge)
+            new_spectrum = calculate_new_spectrum_gpu(edge_index, edge, n)
             if (new_spectrum - original_eigen) > max_increase:
                 max_increase = new_spectrum - original_eigen
                 new_eigen = new_spectrum
