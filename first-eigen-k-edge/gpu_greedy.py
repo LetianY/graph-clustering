@@ -56,6 +56,8 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
                 max_increase = new_spectrum - original_eigen
                 new_eigen = new_spectrum
                 selected_edge = edge
+            if j % 1000 == 0:
+                print(f'{j+1} edges processed in this round!, still {k-j-1} edges to go')
 
         # select edge with max increase for update
         edge_sequence.append(selected_edge)
