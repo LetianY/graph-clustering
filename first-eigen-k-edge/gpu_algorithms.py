@@ -1,11 +1,14 @@
 import os
-import time
-import torch
 import pickle
-from torch_geometric.utils.convert import from_networkx
+import time
+
+import numpy as np
+import torch
 from torch_geometric.utils import get_laplacian
+from torch_geometric.utils.convert import from_networkx
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+
 
 def calculate_spectrum_gpu(edge_index, n):
     lap_sym = get_laplacian(edge_index=edge_index, normalization='sym')
@@ -57,7 +60,8 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
                 new_eigen = new_spectrum
                 selected_edge = edge
             if j % 1000 == 0:
-                print(f'{j+1} edges processed in this round!, still {k-j-1} edges to go')
+                print(
+                    f'{j + 1} edges processed in this round!, still {k - j - 1} edges to go, time = {time.time() - temp_start}')
 
         # select edge with max increase for update
         edge_sequence.append(selected_edge)
@@ -75,9 +79,9 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
         print(f"iteration {i}: time = {time.time() - temp_start}")
 
     print("saving results...")
-    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
-    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
-    eigen_increase_path = output_folder + f'/{method}/eigen_increase_sequence_epct{int(edge_pct*100)}.pkl'
+    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct * 100)}.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
+    eigen_increase_path = output_folder + f'/{method}/eigen_increase_sequence_epct{int(edge_pct * 100)}.pkl'
 
     with open(edge_sequence_path, 'wb') as f:
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -85,3 +89,59 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
         pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
     with open(eigen_increase_path, 'wb') as f:
         pickle.dump(eigen_increase_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def random_method_iter_gpu(k, n, edge_index, unused_edges, eigen_val_1st, random_list):
+    edge_sequence = [unused_edges[i] for i in random_list]
+    eigen_val_sequence = [eigen_val_1st]
+
+    for i in range(k):
+        edge = edge_sequence[i]
+        new_eigen = calculate_new_spectrum_gpu(edge_index, edge, n)
+        eigen_val_sequence.append(new_eigen)
+
+    return eigen_val_sequence
+
+
+def random_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
+    k = len(unused_edges)
+    m = graph_gcc.number_of_edges()
+    n = graph_gcc.number_of_nodes()
+    num_add_edges = min(k, int(edge_pct * m))
+    unused_edges = list(unused_edges)
+
+    # Transfer data object to GPU.
+    device = torch.device('cuda')
+    temp_graph = from_networkx(graph_gcc)
+    edge_index = temp_graph.edge_index.to(device)
+
+    iter_num = 100
+    eigen_val_sequence_iter = []
+
+    temp_start = time.time()
+
+    for i in range(iter_num):
+        random_list = np.random.choice(k, num_add_edges, replace=False)
+        eigen_val_sequence = random_method_iter_gpu(num_add_edges, n, edge_index,
+                                                    unused_edges, eigen_val_1st, random_list)
+        eigen_val_sequence_iter.append(eigen_val_sequence)
+        print(f'iter{i}: time = {time.time()-temp_start}')
+
+    print("saving results...")
+    result_sequence = np.array(eigen_val_sequence_iter)
+    quantile_min = np.quantile(result_sequence, 0, axis=0)
+    quantile_1st = np.quantile(result_sequence, 0.25, axis=0)
+    quantile_median = np.quantile(result_sequence, 0.5, axis=0)
+    quantile_3st = np.quantile(result_sequence, 0.75, axis=0)
+    quantile_max = np.quantile(result_sequence, 1, axis=0)
+    result_mean = np.mean(result_sequence, axis=0)
+
+    var_list = [result_sequence, result_mean, quantile_min, quantile_1st,
+                quantile_median, quantile_3st, quantile_max]
+    name_list = ['result_sequence', 'result_mean', 'quantile_min', 'quantile_1st',
+                 'quantile_median', 'quantile_3st', 'quantile_max']
+
+    for i in range(len(var_list)):
+        export_path = output_folder + f'/{method}/eigen_val_epct{int(edge_pct * 100)}_iter{iter_num}_{name_list[i]}.pkl'
+        with open(export_path, 'wb') as f:
+            pickle.dump(var_list[i], f, protocol=pickle.HIGHEST_PROTOCOL)

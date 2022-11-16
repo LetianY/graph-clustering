@@ -1,12 +1,11 @@
 import argparse
 import sys
-import time
 import warnings
 from os.path import exists
 from pathlib import Path
 
 from algorithms import *
-from gpu_greedy import *
+from gpu_algorithms import *
 from utils import *
 
 module_dur = os.getcwd()
@@ -72,12 +71,12 @@ if __name__ == '__main__':
                           method='greedy',
                           edge_pct=edge_pct)
     elif args.method == 'random':
-        random_method(unused_edges=unused_edges,
-                      eigen_val_1st=eigen_val_1st,
-                      graph_gcc=graph_gcc,
-                      output_folder=output_folder,
-                      method='random',
-                      edge_pct=edge_pct)
+        random_method_gpu(unused_edges=unused_edges,
+                          eigen_val_1st=eigen_val_1st,
+                          graph_gcc=graph_gcc,
+                          output_folder=output_folder,
+                          method='random',
+                          edge_pct=edge_pct)
     elif args.method == 'edge_degree_min':
         if not args.rank:
             raise Exception("please input rank type!")
