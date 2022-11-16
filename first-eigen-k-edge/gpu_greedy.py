@@ -1,4 +1,5 @@
 import os
+import time
 import torch
 import pickle
 from torch_geometric.utils.convert import from_networkx
@@ -40,6 +41,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
     edge_index = temp_graph.edge_index.to(device)
 
     for i in range(num_add_edges):
+        temp_start = time.time()
         original_eigen = calculate_spectrum_gpu(edge_index, n)
 
         k = len(unused_edges)
@@ -60,14 +62,15 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
         eigen_val_sequence.append(new_eigen)
         eigen_increase_sequence.append(max_increase)
 
-        if i % int(num_add_edges / 100 + 1) == 0:
-            print(f"iteration {i}: max increase = {max_increase}, selected edge = {selected_edge}")
+        # if i % int(num_add_edges / 100 + 1) == 0:
+        print(f"iteration {i}: max increase = {max_increase}, selected edge = {selected_edge}")
 
         # Delete from unused edge, update graph
         unused_edges.remove(selected_edge)
         temp_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
                                   [selected_edge[1], selected_edge[0]]]).to(device)
         edge_index = torch.cat([edge_index, temp_edge], 1)
+        print(f"iteration {i}: time = {time.time() - temp_start}")
 
     print("saving results...")
     edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct*100)}.pkl'
