@@ -36,7 +36,7 @@ def greedy_method_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, met
     # Transfer data object to GPU.
     device = torch.device('cuda')
     temp_graph = from_networkx(graph_gcc)
-    edge_index = temp_graph.edge_index().to(device)
+    edge_index = temp_graph.edge_index.to(device)
 
     for i in range(num_add_edges):
         original_eigen = calculate_spectrum_gpu(edge_index)
