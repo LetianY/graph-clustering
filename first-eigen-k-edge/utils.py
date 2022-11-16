@@ -5,6 +5,8 @@ from itertools import combinations
 import networkx as nx
 import numpy as np
 from scipy import sparse
+import scipy as sp
+import scipy.linalg
 
 
 def generate_graph(args, module_path):
@@ -44,14 +46,14 @@ def normalize_laplacian(graph):
     # adjacency matrix
     adj = nx.adjacency_matrix(graph)
     ind = range(len(graph.nodes()))
-    print(adj.shape)
+    # print(adj.shape)
 
     # normalization: deg_norm = D^(-1/2)
     deg_norm = [1.0 / np.sqrt(graph.degree(node)) for node in graph.nodes()]
     deg_norm = sparse.csr_matrix(sparse.coo_matrix((deg_norm, (ind, ind)), shape=adj.shape, dtype=float))
 
     # L = I - D^(-1/2) * A * D^(-1/2)
-    laplacian_norm = sparse.eye(adj.shape[0]) - deg_norm * adj * deg_norm
+    laplacian_norm = sparse.eye(adj.shape[0]) - sp.sparse.csr_matrix(deg_norm * adj * deg_norm)
 
     return laplacian_norm
 
@@ -78,7 +80,8 @@ def generate_unused_edges(graph, module_path, args):
 
 
 def calculate_spectrum(graph):
-    eigen_vals = nx.normalized_laplacian_spectrum(graph)
+    # eigen_vals = nx.normalized_laplacian_spectrum(graph)
+    eigen_vals = sp.linalg.eigvalsh(normalize_laplacian(graph).todense())
     first_eigen_val = eigen_vals[1]
 
     return first_eigen_val
