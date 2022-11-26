@@ -14,8 +14,9 @@ def calculate_spectrum_gpu(edge_index, n):
     lap_sym = get_laplacian(edge_index=edge_index, normalization='sym')
     laplacian = torch.sparse_coo_tensor(lap_sym[0], lap_sym[1], (n, n)).to_dense()
     eigen_vals = torch.linalg.eigvalsh(laplacian)
+    eigen_vals = eigen_vals.detach().cpu().numpy()
     first_eigen_val = eigen_vals[1]
-    return first_eigen_val.detach().cpu().numpy()
+    return first_eigen_val
 
 
 def calculate_new_spectrum_gpu(edge_index, edge, n):

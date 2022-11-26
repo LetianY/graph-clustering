@@ -22,7 +22,7 @@ def result_analysis(args, itr_name=''):
     if not args.edge_pct:
         raise Exception("please input edge percentage!!")
     else:
-        edge_pct = args.edge_pct
+        edge_pct = float(args.edge_pct)
 
     potential_edge_file = output_folder + '/potential_edges.pkl'
     spectrum_file_greedy = output_folder + f'/greedy/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
@@ -52,18 +52,18 @@ def result_analysis(args, itr_name=''):
             with open(import_path, 'rb') as f:
                 spectrum_random = pickle.load(f)
 
-            plt.plot(range(len(spectrum_random)+1), spectrum_random,
+            plt.plot(range(len(spectrum_random)), spectrum_random,
                      label=f'random_{name_list[i]}_{itr_name}',
                      color=color_list[i])
 
     if (args.method == 'greedy') or (not args.method):
-        plt.plot(range(len(spectrum_greedy)+1), spectrum_greedy, label=f'greedy', color='lightcoral')
+        plt.plot(range(len(spectrum_greedy)), spectrum_greedy, label=f'greedy', color='lightcoral')
 
     if (args.method == 'edge_degree_min') or (not args.method):
-        plt.plot(range(len(spectrum_edge_degree_min)+1), spectrum_edge_degree_min, label=f'greedy_edge_degree_min', color='lightgreen')
+        plt.plot(range(len(spectrum_edge_degree_min)), spectrum_edge_degree_min, label=f'greedy_edge_degree_min', color='lightgreen')
 
     if (args.method == 'edge_degree_max') or (not args.method):
-        plt.plot(range(len(spectrum_edge_degree_max)+1), spectrum_edge_degree_max, label=f'greedy_edge_degree_max', color='orange')
+        plt.plot(range(len(spectrum_edge_degree_max)), spectrum_edge_degree_max, label=f'greedy_edge_degree_max', color='orange')
 
     plt.xlabel("# of added edges k")
     plt.ylabel("value of the smallest eigenvalue")
@@ -84,7 +84,7 @@ parser.add_argument('--method', type=str, help='algorithm used')
 parser.add_argument('--edge_pct', type=str, help='percent of original edges to be added')
 arguments = parser.parse_args()
 
-iter_num = 500
+iter_num = 100
 if not arguments.method:
     result_analysis(args=arguments, itr_name=f'iter{iter_num}')
 elif arguments.method == 'random':
