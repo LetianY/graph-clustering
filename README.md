@@ -10,7 +10,7 @@ The argument rank-type is only required for edge_degree_min/max method.
 The default edge_pct will be 0.1, and user can specify an arbitrary portion for calculation.
 
 ```python
-{'method': ['greedy', 'random', 'edge_degree_min', 'edge_degree_max'], 
+{'method': ['greedy', 'random', 'edge_degree_min', 'edge_degree_max', 'min_degree_max_distance'], 
  'dataset': ['cora', 'facebook', 'random'], 
  'rank': ['sum', 'mul']}
 ```
