@@ -101,7 +101,7 @@ if __name__ == '__main__':
                                    edge_pct=edge_pct)
     elif args.method == 'min_degree_max_distance':
         min_degree_max_distance_gpu(unused_edges=unused_edges,
-                                    eigen_val_1st=eigen_val_1st,
+                                 eigen_val_1st=eigen_val_1st,
                                     graph_gcc=graph_gcc,
                                     output_folder=output_folder,
                                     method=args.method,

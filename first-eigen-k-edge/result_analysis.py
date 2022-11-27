@@ -28,6 +28,7 @@ def result_analysis(args, itr_name=''):
     spectrum_file_greedy = output_folder + f'/greedy/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
     spectrum_file_min_edge_degree = output_folder + f'/edge_degree_min/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
     spectrum_file_max_edge_degree = output_folder + f'/edge_degree_max/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+    spectrum_file_min_degree_max_dst = output_folder + f'/min_degree_max_distance/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
 
     with open(potential_edge_file, 'rb') as f:
         unused_edges = pickle.load(f)
@@ -37,6 +38,8 @@ def result_analysis(args, itr_name=''):
         spectrum_edge_degree_max = pickle.load(f)
     with open(spectrum_file_min_edge_degree, 'rb') as f:
         spectrum_edge_degree_min = pickle.load(f)
+    with open(spectrum_file_min_degree_max_dst, 'rb') as f:
+        spectrum_min_degree_max_dst = pickle.load(f)
 
     plt.figure(figsize=(10.5, 6.5))
 
@@ -57,13 +60,28 @@ def result_analysis(args, itr_name=''):
                      color=color_list[i])
 
     if (args.method == 'greedy') or (not args.method):
-        plt.plot(range(len(spectrum_greedy)), spectrum_greedy, label=f'greedy', color='lightcoral')
+        plt.plot(range(len(spectrum_greedy)),
+                 spectrum_greedy,
+                 label=f'greedy',
+                 color='lightcoral')
 
     if (args.method == 'edge_degree_min') or (not args.method):
-        plt.plot(range(len(spectrum_edge_degree_min)), spectrum_edge_degree_min, label=f'greedy_edge_degree_min', color='lightgreen')
+        plt.plot(range(len(spectrum_edge_degree_min)),
+                 spectrum_edge_degree_min,
+                 label=f'greedy_edge_degree_min',
+                 color='lightgreen')
 
     if (args.method == 'edge_degree_max') or (not args.method):
-        plt.plot(range(len(spectrum_edge_degree_max)), spectrum_edge_degree_max, label=f'greedy_edge_degree_max', color='orange')
+        plt.plot(range(len(spectrum_edge_degree_max)),
+                 spectrum_edge_degree_max,
+                 label=f'greedy_edge_degree_max',
+                 color='orange')
+
+    if (args.method == 'min_degree_max_distance') or (not args.method):
+        plt.plot(range(len(spectrum_min_degree_max_dst)),
+                 spectrum_edge_degree_max,
+                 label=f'min_degree_max_distance',
+                 color='darkorchid')
 
     plt.xlabel("# of added edges k")
     plt.ylabel("value of the smallest eigenvalue")
