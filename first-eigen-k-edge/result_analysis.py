@@ -79,7 +79,7 @@ def result_analysis(args, itr_name=''):
 
     if (args.method == 'min_degree_max_distance') or (not args.method):
         plt.plot(range(len(spectrum_min_degree_max_dst)),
-                 spectrum_edge_degree_max,
+                 spectrum_min_degree_max_dst,
                  label=f'min_degree_max_distance',
                  color='darkorchid')
 
