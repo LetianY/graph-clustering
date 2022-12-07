@@ -1,7 +1,7 @@
 from itertools import combinations
 from random import randint
 
-n = 64
+n = 256
 
 for u, v in combinations(range(n), 2):
     if randint(0, 32) == 0:

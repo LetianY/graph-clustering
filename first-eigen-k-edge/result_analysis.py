@@ -25,9 +25,10 @@ def result_analysis(args, itr_name=''):
         edge_pct = float(args.edge_pct)
 
     potential_edge_file = output_folder + '/potential_edges.pkl'
-    spectrum_file_greedy = output_folder + f'/greedy/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
-    spectrum_file_min_edge_degree = output_folder + f'/edge_degree_min/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
-    spectrum_file_max_edge_degree = output_folder + f'/edge_degree_max/eigen_val_sequence_epct{int(edge_pct*100)}.pkl'
+    spectrum_file_greedy = output_folder + f'/greedy/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
+    spectrum_file_min_edge_degree = output_folder + f'/edge_degree_min/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
+    spectrum_file_max_edge_degree = output_folder + f'/edge_degree_max/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
+    spectrum_file_min_degree_random = output_folder + f'/min_degree_random_selection/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
     spectrum_file_min_degree_max_dst = output_folder + f'/min_degree_max_distance/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
 
     with open(potential_edge_file, 'rb') as f:
@@ -40,17 +41,21 @@ def result_analysis(args, itr_name=''):
         spectrum_edge_degree_min = pickle.load(f)
     with open(spectrum_file_min_degree_max_dst, 'rb') as f:
         spectrum_min_degree_max_dst = pickle.load(f)
+    with open(spectrum_file_min_degree_random, 'rb') as f:
+        spectrum_min_degree_ram_sel = pickle.load(f)
 
     plt.figure(figsize=(10.5, 6.5))
 
     if (args.method == 'random') or (not args.method):
-        name_list = ['result_mean', 'quantile_min', 'quantile_1st',
-                     'quantile_median', 'quantile_3st', 'quantile_max']
-        color_list = ['slateblue', 'lightsteelblue', 'darkgrey',
-                      'cornflowerblue', 'slategrey', 'black']
+        # name_list = ['result_mean', 'quantile_min', 'quantile_1st',
+        #              'quantile_median', 'quantile_3st', 'quantile_max']
+        # color_list = ['slateblue', 'lightsteelblue', 'darkgrey',
+        #               'cornflowerblue', 'slategrey', 'black']
+        name_list = ['result_mean', 'quantile_min', 'quantile_max']
+        color_list = ['slateblue', 'lightsteelblue', 'black']
 
         for i in range(len(name_list)):
-            import_path = output_folder + f'/random/eigen_val_epct{int(edge_pct*100)}_iter{iter_num}_{name_list[i]}.pkl'
+            import_path = output_folder + f'/random/eigen_val_epct{int(edge_pct * 100)}_iter{iter_num}_{name_list[i]}.pkl'
 
             with open(import_path, 'rb') as f:
                 spectrum_random = pickle.load(f)
@@ -83,16 +88,25 @@ def result_analysis(args, itr_name=''):
                  label=f'min_degree_max_distance',
                  color='darkorchid')
 
+    if (args.method == 'min_degree_random_selection') or (not args.method):
+        plt.plot(range(len(spectrum_min_degree_ram_sel)),
+                 spectrum_min_degree_ram_sel,
+                 label=f'min_degree_random_selection',
+                 color='cornflowerblue')
+
+    # 'darkgrey'
+
     plt.xlabel("# of added edges k")
     plt.ylabel("value of the smallest eigenvalue")
     plt.legend()
 
     if not args.method:
-        plt.title(f"eigenvalue plot: {args.data} dataset {int(edge_pct*100)}% edge")
-        plt.savefig(output_folder + f'/result_analysis_epct{int(edge_pct*100)}_{itr_name}.png')
+        plt.title(f"eigenvalue plot: {args.data} dataset {int(edge_pct * 100)}% edge")
+        plt.savefig(output_folder + f'/result_analysis_epct{int(edge_pct * 100)}_{itr_name}.png')
     else:
-        plt.title(f"eigenvalue plot: {args.data} dataset {int(edge_pct*100)}% edge, {args.method} method")
-        plt.savefig(output_folder + f'/{args.method}/result_analysis_epct{int(edge_pct*100)}_{itr_name}.png')
+        plt.title(f"eigenvalue plot: {args.data} dataset {int(edge_pct * 100)}% edge, {args.method} method")
+        plt.savefig(output_folder + f'/{args.method}/result_analysis_epct{int(edge_pct * 100)}_{itr_name}.png')
+
 
 ###############################################################################################################
 

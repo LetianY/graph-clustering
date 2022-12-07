@@ -4,7 +4,6 @@ import warnings
 from os.path import exists
 from pathlib import Path
 
-from algorithms import *
 from gpu_algorithms import *
 from utils import *
 
@@ -99,6 +98,13 @@ if __name__ == '__main__':
                                    method=args.method,
                                    rank=args.rank,
                                    edge_pct=edge_pct)
+    elif args.method == 'min_degree_random_selection':
+        min_degree_random_selection_gpu(unused_edges=unused_edges,
+                                        eigen_val_1st=eigen_val_1st,
+                                        graph_gcc=graph_gcc,
+                                        output_folder=output_folder,
+                                        method=args.method,
+                                        edge_pct=edge_pct)
     elif args.method == 'min_degree_max_distance':
         min_degree_max_distance_gpu(unused_edges=unused_edges,
                                     eigen_val_1st=eigen_val_1st,

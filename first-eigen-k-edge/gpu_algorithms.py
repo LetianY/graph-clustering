@@ -1,6 +1,7 @@
 import os
 import pickle
 import time
+import random
 
 import networkx as nx
 import numpy as np
@@ -249,7 +250,7 @@ def min_degree_max_distance_gpu(unused_edges, eigen_val_1st, graph_gcc, output_f
         edge_map[edge[0]].append(edge)
         edge_map[edge[1]].append(edge)
 
-    # greedy by degree sum
+    # parameters
     k = len(unused_edges)
     n = graph_gcc.number_of_nodes()
     m = graph_gcc.number_of_edges()
@@ -282,7 +283,7 @@ def min_degree_max_distance_gpu(unused_edges, eigen_val_1st, graph_gcc, output_f
         edge_map[selected_edge[0]].remove(selected_edge)
         edge_map[selected_edge[1]].remove(selected_edge)
 
-        # Update rank
+        # Update graph
         graph_gcc.add_edge(*selected_edge)
 
         # calculate eigenvalues
@@ -303,3 +304,90 @@ def min_degree_max_distance_gpu(unused_edges, eigen_val_1st, graph_gcc, output_f
         pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
     with open(eigen_val_sequence_path, 'wb') as f:
         pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def min_degree_random_selection_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
+    # Initialization
+    node_degree = {}
+    edge_map = dict.fromkeys(list(graph_gcc.nodes()), [])
+
+    for node in graph_gcc.nodes():
+        node_degree[node] = graph_gcc.degree(node)
+
+    for edge in unused_edges:
+        edge_map[edge[0]].append(edge)
+        edge_map[edge[1]].append(edge)
+
+    # parameters
+    k = len(unused_edges)
+    n = graph_gcc.number_of_nodes()
+    m = graph_gcc.number_of_edges()
+    num_add_edges = min(k, int(edge_pct * m))
+
+    # Transfer data object to GPU.
+    device = torch.device('cuda')
+    temp_graph = from_networkx(graph_gcc)
+    edge_index = temp_graph.edge_index.to(device)
+
+    eigen_val_sequence = [eigen_val_1st]
+    edge_sequence = []
+
+    print("generating edge sequences...")
+
+    for i in range(num_add_edges):
+        selected_node_i = min(node_degree, key=node_degree.get)
+        selected_edge = random.choice(edge_map[selected_node_i])
+
+        edge_sequence.append(selected_edge)
+
+        # update dictionary
+        node_degree[selected_edge[0]] += 1
+        node_degree[selected_edge[1]] += 1
+        edge_map[selected_edge[0]].remove(selected_edge)
+        edge_map[selected_edge[1]].remove(selected_edge)
+
+        # Update graph
+        graph_gcc.add_edge(*selected_edge)
+
+        # calculate eigenvalues
+        new_eigen = calculate_new_spectrum_gpu(edge_index, selected_edge, n)
+        eigen_val_sequence.append(new_eigen)
+        unused_edges.remove(selected_edge)
+
+        # update graph
+        temp_edge = torch.tensor([[selected_edge[0], selected_edge[1]],
+                                  [selected_edge[1], selected_edge[0]]]).to(device)
+        edge_index = torch.cat([edge_index, temp_edge], 1)
+
+    print("saving results...")
+    edge_sequence_path = output_folder + f'/{method}/edge_sequence_epct{int(edge_pct * 100)}.pkl'
+    eigen_val_sequence_path = output_folder + f'/{method}/eigen_val_sequence_epct{int(edge_pct * 100)}.pkl'
+
+    with open(edge_sequence_path, 'wb') as f:
+        pickle.dump(edge_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(eigen_val_sequence_path, 'wb') as f:
+        pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def fielder_selection_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
+    # parameters
+    k = len(unused_edges)
+    n = graph_gcc.number_of_nodes()
+    m = graph_gcc.number_of_edges()
+    num_add_edges = min(k, int(edge_pct * m))
+
+    # Transfer data object to GPU.
+    device = torch.device('cuda')
+    temp_graph = from_networkx(graph_gcc)
+    edge_index = temp_graph.edge_index.to(device)
+
+    eigen_val_sequence = [eigen_val_1st]
+    edge_sequence = []
+
+    print("generating edge sequences...")
+
+    for i in range(num_add_edges):
+        print('hi')
+
+
+
