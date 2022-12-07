@@ -70,11 +70,11 @@ def result_analysis(args, itr_name=''):
                  label=f'greedy',
                  color='lightcoral')
 
-    if (args.method == 'edge_degree_min') or (not args.method):
-        plt.plot(range(len(spectrum_edge_degree_min)),
-                 spectrum_edge_degree_min,
-                 label=f'greedy_edge_degree_min',
-                 color='lightgreen')
+    # if (args.method == 'edge_degree_min') or (not args.method):
+    #     plt.plot(range(len(spectrum_edge_degree_min)),
+    #              spectrum_edge_degree_min,
+    #              label=f'greedy_edge_degree_min',
+    #              color='lightgreen')
 
     if (args.method == 'edge_degree_max') or (not args.method):
         plt.plot(range(len(spectrum_edge_degree_max)),
