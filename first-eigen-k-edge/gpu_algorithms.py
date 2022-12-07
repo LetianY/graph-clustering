@@ -369,25 +369,5 @@ def min_degree_random_selection_gpu(unused_edges, eigen_val_1st, graph_gcc, outp
         pickle.dump(eigen_val_sequence, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def fielder_selection_gpu(unused_edges, eigen_val_1st, graph_gcc, output_folder, method, edge_pct):
-    # parameters
-    k = len(unused_edges)
-    n = graph_gcc.number_of_nodes()
-    m = graph_gcc.number_of_edges()
-    num_add_edges = min(k, int(edge_pct * m))
-
-    # Transfer data object to GPU.
-    device = torch.device('cuda')
-    temp_graph = from_networkx(graph_gcc)
-    edge_index = temp_graph.edge_index.to(device)
-
-    eigen_val_sequence = [eigen_val_1st]
-    edge_sequence = []
-
-    print("generating edge sequences...")
-
-    for i in range(num_add_edges):
-        print('hi')
-
 
 
